@@ -4,11 +4,12 @@
  * Note n combines pitch p and instrument k using a single value n = 128k + p.
  */
 import MidiWriter from 'midi-writer-js'; // https://grimmdude.com/MidiWriterJS/docs/modules.html
-import { MAX_PITCH } from './music_transformer_config'
+import { MAX_PITCH, TIME_RESOLUTION } from './music_transformer_config'
 import { DUR_OFFSET, NOTE_OFFSET, CONTROL_OFFSET } from './music_transformer_vocab';
+import { channel } from 'process';
 
 const VELOCITY = 72
-const BEAT = 2
+const BEAT = 2;
 
 function offset(num) {
   if (num >= CONTROL_OFFSET) return num - CONTROL_OFFSET;
@@ -42,13 +43,13 @@ export function compoundToMidi(notesData: number[][]): string {
    * Output map key/pair set: <Instrument midi class, track for that instrument >.
    */
   var num_tracks = 0
-  const instruMap = new Map<number, any>();
+  const instruMap = new Map<number, [any, number]>();
   for (let i = 0; i < notesData.length; i++) {
     const [start, duration, pitch, instrument, velocity] = notesData[i];
 
     /* If we get encounter a new instrument, add a new MIDI track for it. */
     if (!instruMap.has(instrument)) {
-      var idx = num_tracks;
+      var idx: number = num_tracks;
       const track = new MidiWriter.Track();
       if (instrument == 128) { // drums always go on channel 9
         idx = 9;
@@ -56,24 +57,30 @@ export function compoundToMidi(notesData: number[][]): string {
       } else {
         track.addEvent(new MidiWriter.ProgramChangeEvent({ instrument: instrument, channel: idx }));
       }
-      instruMap.set(instrument, track);
+      instruMap.set(instrument, [track, idx]);
       num_tracks += 1
       if (num_tracks == 9) {
         num_tracks += 1 // skip the drums track
       }
     }
     
-    const track = instruMap.get(instrument);
+    const elem = instruMap.get(instrument);
+    if (elem === undefined) {
+      throw Error("Shouldn't happen!");
+    }
+    const track = elem[0];
+    const channel = elem[1];
     // https://github.com/grimmdude/MidiWriterJS/blob/master/src/midi-events/note-event.ts
     const note = new MidiWriter.NoteEvent({
       pitch: pitch, velocity: velocity,
-      tick: start * BEAT, tickDuration: duration * BEAT
+      tick: start * 2, duration: `T${duration * 2}`,
+      channel: channel
     });
     track.addEvent(note);
   }
 
   /* Download file. */
-  const writer = new MidiWriter.Writer(Array.from(instruMap.values()));
+  const writer = new MidiWriter.Writer(Array.from(instruMap.values()).map(v => v[0]));
   return writer.dataUri();
 }
 
