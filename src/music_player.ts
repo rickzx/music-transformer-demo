@@ -36,6 +36,7 @@ async function download() {
 async function reload() {
   var player = document.getElementById('midi-player');
   var visualizer = document.getElementById('midi-visualizer');
+  player.soundFont = 'https://storage.googleapis.com/magentadata/js/soundfonts/sgm_plus';
   player.stop();
   player.reload();
   visualizer.reload();
