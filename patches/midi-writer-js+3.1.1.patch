@@ -1,0 +1,39 @@
+diff --git a/node_modules/midi-writer-js/browser/midiwriter.js b/node_modules/midi-writer-js/browser/midiwriter.js
+index b838e72..4e5c324 100644
+--- a/node_modules/midi-writer-js/browser/midiwriter.js
++++ b/node_modules/midi-writer-js/browser/midiwriter.js
+@@ -11,7 +11,7 @@ var MidiWriter = (function () {
+         HEADER_CHUNK_LENGTH: [0x00, 0x00, 0x00, 0x06],
+         HEADER_CHUNK_FORMAT0: [0x00, 0x00],
+         HEADER_CHUNK_FORMAT1: [0x00, 0x01],
+-        HEADER_CHUNK_DIVISION: [0x00, 0x80],
++        HEADER_CHUNK_DIVISION: [0x00, 0x32],
+         TRACK_CHUNK_TYPE: [0x4d, 0x54, 0x72, 0x6b],
+         META_EVENT_ID: 0xFF,
+         META_SMTPE_OFFSET: 0x54
+diff --git a/node_modules/midi-writer-js/build/index.browser.js b/node_modules/midi-writer-js/build/index.browser.js
+index c897c0a..c07d816 100644
+--- a/node_modules/midi-writer-js/build/index.browser.js
++++ b/node_modules/midi-writer-js/build/index.browser.js
+@@ -8,7 +8,7 @@ var Constants = {
+     HEADER_CHUNK_LENGTH: [0x00, 0x00, 0x00, 0x06],
+     HEADER_CHUNK_FORMAT0: [0x00, 0x00],
+     HEADER_CHUNK_FORMAT1: [0x00, 0x01],
+-    HEADER_CHUNK_DIVISION: [0x00, 0x80],
++    HEADER_CHUNK_DIVISION: [0x00, 0x32],
+     TRACK_CHUNK_TYPE: [0x4d, 0x54, 0x72, 0x6b],
+     META_EVENT_ID: 0xFF,
+     META_SMTPE_OFFSET: 0x54
+diff --git a/node_modules/midi-writer-js/build/index.js b/node_modules/midi-writer-js/build/index.js
+index 071fddd..3c0d126 100644
+--- a/node_modules/midi-writer-js/build/index.js
++++ b/node_modules/midi-writer-js/build/index.js
+@@ -10,7 +10,7 @@ var Constants = {
+     HEADER_CHUNK_LENGTH: [0x00, 0x00, 0x00, 0x06],
+     HEADER_CHUNK_FORMAT0: [0x00, 0x00],
+     HEADER_CHUNK_FORMAT1: [0x00, 0x01],
+-    HEADER_CHUNK_DIVISION: [0x00, 0x80],
++    HEADER_CHUNK_DIVISION: [0x00, 0x32],
+     TRACK_CHUNK_TYPE: [0x4d, 0x54, 0x72, 0x6b],
+     META_EVENT_ID: 0xFF,
+     META_SMTPE_OFFSET: 0x54

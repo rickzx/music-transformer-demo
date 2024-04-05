@@ -73,7 +73,7 @@ export function compoundToMidi(notesData: number[][]): string {
     // https://github.com/grimmdude/MidiWriterJS/blob/master/src/midi-events/note-event.ts
     const note = new MidiWriter.NoteEvent({
       pitch: pitch, velocity: velocity,
-      tick: start * 2, duration: `T${duration * 2}`,
+      tick: start, duration: `T${duration}`,
       channel: channel
     });
     track.addEvent(note);

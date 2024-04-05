@@ -9,12 +9,15 @@
     "dev": "npm-run-all --parallel watch:* serve",
     "watch:parcel": "parcel watch src/music_player.ts",
     "predeploy": "npm run build",
-    "deploy": "NODE_DEBUG=gh-pages gh-pages -d dist"
+    "deploy": "NODE_DEBUG=gh-pages gh-pages -d dist",
+    "postinstall": "patch-package"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@magenta/music": "^1.23.1",
+    "@mlc-ai/web-llm": "^0.2.30",
     "@parcel/resolver-glob": "^2.12.0",
     "buffer": "^6.0.3",
     "gh-pages": "^6.1.1",
@@ -22,13 +25,11 @@
     "parcel": "^2.12.0",
     "parcel-namer-rewrite": "^2.10.3-rc.2",
     "parcel-reporter-static-files-copy": "^1.5.3",
+    "patch-package": "^8.0.0",
+    "postinstall-postinstall": "^2.1.0",
     "process": "^0.11.10",
     "typescript": "^5.4.3",
     "url": "^0.11.3"
-  },
-  "dependencies": {
-    "@magenta/music": "^1.23.1",
-    "@mlc-ai/web-llm": "^0.2.30"
   },
   "staticFiles": {
     "staticPath": "src/assets"
