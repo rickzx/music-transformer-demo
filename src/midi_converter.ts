@@ -4,7 +4,7 @@
  * Note n combines pitch p and instrument k using a single value n = 128k + p.
  */
 import MidiWriter from 'midi-writer-js'; // https://grimmdude.com/MidiWriterJS/docs/modules.html
-import { MAX_PITCH, TIME_RESOLUTION } from './music_transformer_config'
+import { MAX_PITCH } from './music_transformer_config'
 import { DUR_OFFSET, NOTE_OFFSET, CONTROL_OFFSET } from './music_transformer_vocab';
 
 const NOTE_ON_VELOCITY = 56.25
@@ -83,8 +83,3 @@ export function compoundToMidi(notesData: number[][]): string {
   const writer = new MidiWriter.Writer(midi);
   return writer.dataUri();
 }
-
-// compoundToMidi(eventsToCompound([0, 10048, 11060, 50, 10048, 11060, 
-//     100, 10048, 11067, 150, 10048, 11067, 200, 10048, 11069, 250, 10048, 11069, 
-//     300, 10095, 11067, 400, 10048, 11065, 450, 10048, 11065, 500, 10048, 11064, 
-//     550, 10048, 11064, 600, 10048, 11062, 650, 10048, 11062, 700, 10095, 11060]))

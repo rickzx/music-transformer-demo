@@ -122,11 +122,11 @@ button:disabled {
 }
 
 #midi-visualizer svg rect.note[data-instrument="0"]{
-  fill: #758c6f;
+  fill: #a36c6c;
 }
 
 #midi-visualizer svg rect.note[data-instrument="1"]{
-  fill: #a36c6c;
+  fill: #5c9090;
 }
 
 #midi-visualizer svg rect.note[data-instrument="2"]{
@@ -134,7 +134,7 @@ button:disabled {
 }
 
 #midi-visualizer svg rect.note[data-instrument="3"]{
-  fill: #8cb5c3;
+  fill: #c5bbde;
 }
 
 #midi-visualizer svg rect.note[data-instrument="4"]{
@@ -146,11 +146,11 @@ button:disabled {
 }
 
 #midi-visualizer svg rect.note[data-instrument="6"]{
-  fill: #5c9090;
+  fill: #8cb5c3;
 }
 
 #midi-visualizer svg rect.note[data-instrument="7"]{
-  fill: #c5bbde;
+  fill: #758c6f;
 }
 
 #midi-visualizer svg rect.note[data-instrument="8"]{
