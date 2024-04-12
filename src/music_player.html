@@ -15,7 +15,7 @@
                 <i class="fab fa-github fa-3x"></i>
             </a>
         </div>
-        <h1>Infinite Music Player with Anticipatory Music Transformer</h1>
+        <h1>Infinite Music Player <br> with Anticipatory Music Transformer</h1>
         <label id="init-label"> </label>
         <br>
         <br>
@@ -40,18 +40,42 @@
         </div>
     </div>
 
+    <div class="config-panel" id="config-panel">
+        <div class="config-panel-header">
+            <h4>Configuration</h4>
+            <p>(Effective at next chunk)<br></p>
+
+        </div>
+        <div class="config-panel-content">
+            <div class="config-panel-row">
+                <label for="temperature">Temperature</label>
+                <input type="range" id="temperature" min="0.1" max="1.0" step="0.02" value="0.5">
+                <span id="temperature-value">0.5</span>
+            </div>
+            <div class="config-panel-row">
+                <label for="topP">Top P</label>
+                <input type="range" id="topP" min="0.1" max="1.0" step="0.1" value="0.9">
+                <span id="topP-value">0.9</span>
+            </div>
+            <div class="config-panel-row">
+                <label for="frequencyPenalty">Frequency Penalty</label>
+                <input type="range" id="frequencyPenalty" min="-2.0" max="2.0" step="0.1" value="0.0">
+                <span id="frequencyPenalty-value">0.0</span>
+        </div>
+    </div>
+
     <div class="debug" id="debug">
         <hr>
         <!-- <button class="testing_button" id="switchButton">Play Tchaikovsky</button>
         <button class="testing_button" id="moveButton">Move timestamp</button>
         <button class="testing_button" id="convertButton">Convert to Twinkle</button> -->
+        <h4>Log:<br></h4>
         <p id="log">
             <!-- We are going to get rid of the buttons later. Just putting them here to show that we could:<br>
             &nbsp 1. change the midi file that is being played. The original sound file is Greig, but click button to play Tchaikovsky.<br>
             &nbsp 2. start playing at a specified timestamp. No matter how far along we are in the music, start playing at 60 seconds.<br>
             &nbsp 3. convert raw output of Twinkle Twinkle Little Star to MIDI (see <a href="https://arxiv.org/pdf/2306.08620.pdf" target="_blank">this paper</a>). 
             We expect these functions to come in handy later.<br><br> -->
-            Log:<br>
         </p>
     </div>
 </body>

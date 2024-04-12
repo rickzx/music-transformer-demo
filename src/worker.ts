@@ -1,7 +1,7 @@
 // Serve the chat workload through web worker
-import { ChatWorkerHandler, ChatModule, LogitProcessor, WorkerMessage, CustomRequestParams, ChatInterface } from "@mlc-ai/web-llm";
+import { ChatWorkerHandler, ChatModule, LogitProcessor, WorkerMessage, CustomRequestParams, ChatInterface, GenerationConfig } from "@mlc-ai/web-llm";
 import { MusicLogitProcessor } from "./music_logit_processor";
-import { chunkGenerator, GenerationProgressCallback } from "./music_transformer_generate";
+import { ChunkGenerator, GenerationProgressCallback } from "./music_transformer_generate";
 
 
 const musicLogitProcessor = new MusicLogitProcessor();
@@ -10,7 +10,8 @@ const logitProcessorRegistry = new Map<string, LogitProcessor>();
 logitProcessorRegistry.set("music-medium-800k-q0f32", musicLogitProcessor);
 
 class CustomChatWorkerHandler extends ChatWorkerHandler {
-  private chunkGenerator: AsyncGenerator<Array<number>, void, void>
+  private chunkGenerator: ChunkGenerator;
+  private chunkIterator: AsyncGenerator<Array<number>, void, void>;
   private callback: GenerationProgressCallback;
 
   constructor(chat: ChatInterface) {
@@ -26,7 +27,8 @@ class CustomChatWorkerHandler extends ChatWorkerHandler {
       };
       postMessage(msg);
     }
-    this.chunkGenerator = chunkGenerator(chat, musicLogitProcessor, this.callback);
+    this.chunkGenerator = new ChunkGenerator();
+    this.chunkIterator = this.chunkGenerator.chunkGenerate(chat, musicLogitProcessor, this.callback);
   }
 
   onmessage(event: MessageEvent<any>): void {
@@ -35,9 +37,11 @@ class CustomChatWorkerHandler extends ChatWorkerHandler {
       case "customRequest": {
         const params = msg.content as CustomRequestParams;
         if (params.requestName == 'chunkGenerate') {
-          console.log("Worker: generating music-transformer tokens...");
+          const genConfig = JSON.parse(params.requestMessage) as GenerationConfig;
+          this.chunkGenerator.setGenConfig(genConfig);
+          console.log("Worker: generating music-transformer tokens with config", genConfig);
           this.handleTask(msg.uuid, async () => {
-            const { value } = await this.chunkGenerator.next();
+            const { value } = await this.chunkIterator.next();
             console.log("Worker: done generating");
             return value!.join();
           });
@@ -45,7 +49,9 @@ class CustomChatWorkerHandler extends ChatWorkerHandler {
           console.log("Worker: reset music-transformer generator");
           this.handleTask(msg.uuid, async () => {
             musicLogitProcessor.resetState();
-            this.chunkGenerator = chunkGenerator(chat, musicLogitProcessor, this.callback);
+            chat.resetChat();
+            this.chunkGenerator = new ChunkGenerator();
+            this.chunkIterator = this.chunkGenerator.chunkGenerate(chat, musicLogitProcessor, this.callback);
             return null;
           })
         }

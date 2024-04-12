@@ -21,9 +21,88 @@ body {
   overflow-y: auto; /* Adds vertical scroll if content overflows */
 }
 
-.debug {
+.config-panel {
   position: fixed;
   top: 0;
+  right: 0;
+  bottom: 50%;
+  width: 200px; /* Adjust the width as needed */
+  background-color: #f1f1f1; /* Light grey background, change as needed */
+  padding: 10px;
+  box-shadow: -2px 0 5px rgba(0,0,0,0.5); /* Optional: adds shadow for depth */
+}
+
+.config-panel-header h4 {
+  color: #333;
+  margin-bottom: 0px;
+}
+
+.config-panel-header p {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  margin-top: 10px;
+  margin-bottom: 5px;
+  color: #444;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 70%;
+  height: 5px;
+  background-color: #ddd;
+  outline: none;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+input[type="range"]:hover {
+  background-color: #ccc;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  background-color: #2B54C5;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 15px;
+  height: 15px;
+  background-color: #2B54C5;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover,
+input[type="range"]::-moz-range-thumb:hover {
+  background-color: #0C48B6;
+}
+
+span {
+  margin-left: 10px;
+  color: #333;
+  font-size: 14px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .config-panel {
+      width: auto;
+      padding: 10px;
+  }
+}
+
+.debug {
+  position: fixed;
+  top: 50%;
   right: 0;
   bottom: 0;
   width: 200px; /* Adjust the width as needed */
@@ -31,6 +110,11 @@ body {
   background-color: #f1f1f1; /* Light grey background, change as needed */
   padding: 10px;
   box-shadow: -2px 0 5px rgba(0,0,0,0.5); /* Optional: adds shadow for depth */
+}
+
+.debug h4 {
+  color: #333;
+  margin-bottom: 10px;
 }
 
 .footnote {

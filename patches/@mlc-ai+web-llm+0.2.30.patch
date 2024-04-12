@@ -1,0 +1,87 @@
+diff --git a/node_modules/@mlc-ai/web-llm/lib/chat_module.d.ts b/node_modules/@mlc-ai/web-llm/lib/chat_module.d.ts
+index b97db71..9a75741 100644
+--- a/node_modules/@mlc-ai/web-llm/lib/chat_module.d.ts
++++ b/node_modules/@mlc-ai/web-llm/lib/chat_module.d.ts
+@@ -41,7 +41,7 @@ export declare class ChatModule implements ChatInterface {
+     unload(): Promise<void>;
+     getMaxStorageBufferBindingSize(): Promise<number>;
+     getGPUVendor(): Promise<string>;
+-    forwardTokensAndSample(inputIds: Array<number>, isPrefill: boolean): Promise<number>;
++    forwardTokensAndSample(inputIds: Array<number>, isPrefill: boolean, genConfig?: GenerationConfig): Promise<number>;
+     /**
+      * @returns Whether the generation stopped.
+      */
+@@ -90,7 +90,7 @@ export declare class ChatRestModule implements ChatInterface {
+     getMessage(): Promise<string>;
+     unload(): Promise<void>;
+     interruptGenerate(): Promise<void>;
+-    forwardTokensAndSample(inputIds: Array<number>, isPrefill: boolean): Promise<number>;
++    forwardTokensAndSample(inputIds: Array<number>, isPrefill: boolean, genConfig?: GenerationConfig): Promise<number>;
+     chatCompletion(request: ChatCompletionRequestNonStreaming): Promise<ChatCompletion>;
+     chatCompletion(request: ChatCompletionRequestStreaming): Promise<AsyncIterable<ChatCompletionChunk>>;
+     chatCompletion(request: ChatCompletionRequestBase): Promise<AsyncIterable<ChatCompletionChunk> | ChatCompletion>;
+diff --git a/node_modules/@mlc-ai/web-llm/lib/index.js b/node_modules/@mlc-ai/web-llm/lib/index.js
+index e63ca8f..0fcf4dc 100644
+--- a/node_modules/@mlc-ai/web-llm/lib/index.js
++++ b/node_modules/@mlc-ai/web-llm/lib/index.js
+@@ -5287,6 +5287,7 @@ class LLMChatPipeline {
+             this.resetRuntimeStats();
+         }
+         this.resetKVCache();
++        this.appearedTokensFreq.clear();
+         this.filledKVCacheLength = 0;
+         (_a = this.logitProcessor) === null || _a === void 0 ? void 0 : _a.resetState();
+         this.tvm.endScope();
+@@ -5830,7 +5831,7 @@ class LLMChatPipeline {
+         }
+         return tokens;
+     }
+-    forwardTokensAndSample(inputIds, isPrefill) {
++    forwardTokensAndSample(inputIds, isPrefill, genConfig) {
+         return __awaiter(this, void 0, void 0, function* () {
+             // 1. Convert input to NDArray
+             const tstart = performance.now();
+@@ -5839,8 +5840,16 @@ class LLMChatPipeline {
+             inputData.copyFrom(inputIds);
+             // 2. Forward tokens and get logits
+             const logitsOnGPU = this.forward(inputData);
+-            const nextToken = yield this.sampleTokenFromLogits(logitsOnGPU);
++            const nextToken = yield this.sampleTokenFromLogits(logitsOnGPU, genConfig);
+             this.tvm.endScope();
++
++            // Update token appearance frequency
++            const curFreq = this.appearedTokensFreq.get(nextToken);
++            if (curFreq !== undefined) {
++                this.appearedTokensFreq.set(nextToken, curFreq + 1);
++            } else {
++                this.appearedTokensFreq.set(nextToken, 1);
++            }
+             // 3. Stats
+             const tend = performance.now();
+             if (isPrefill) {
+diff --git a/node_modules/@mlc-ai/web-llm/lib/llm_chat.d.ts b/node_modules/@mlc-ai/web-llm/lib/llm_chat.d.ts
+index 0152e10..12f6c50 100644
+--- a/node_modules/@mlc-ai/web-llm/lib/llm_chat.d.ts
++++ b/node_modules/@mlc-ai/web-llm/lib/llm_chat.d.ts
+@@ -143,7 +143,7 @@ export declare class LLMChatPipeline {
+     private updateLogitsOnCPU;
+     private sampleTokenFromLogits;
+     private getInputTokens;
+-    forwardTokensAndSample(inputIds: Array<number>, isPrefill: boolean): Promise<number>;
++    forwardTokensAndSample(inputIds: Array<number>, isPrefill: boolean, genConfig?: GenerationConfig): Promise<number>;
+     /**
+      * Based on `sampledToken` and `this.logitsOnCPU`, which becomes a distribution after
+      * calling `this.tvm.applySoftmaxWithTemperature()`, generate `ChatCompletionTokenLogprob` and
+diff --git a/node_modules/@mlc-ai/web-llm/lib/types.d.ts b/node_modules/@mlc-ai/web-llm/lib/types.d.ts
+index 0b88852..b0c3965 100644
+--- a/node_modules/@mlc-ai/web-llm/lib/types.d.ts
++++ b/node_modules/@mlc-ai/web-llm/lib/types.d.ts
+@@ -124,6 +124,6 @@ export interface ChatInterface {
+      * @returns Next token sampled.
+      * @note This is an async function.
+      */
+-    forwardTokensAndSample(inputIds: Array<number>, isPrefill: boolean): Promise<number>;
++    forwardTokensAndSample(inputIds: Array<number>, isPrefill: boolean, genConfig?: GenerationConfig): Promise<number>;
+ }
+ //# sourceMappingURL=types.d.ts.map
+\ No newline at end of file

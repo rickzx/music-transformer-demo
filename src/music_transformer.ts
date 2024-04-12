@@ -18,13 +18,13 @@ class CustomChatWorkerClient extends webllm.ChatWorkerClient {
     }
   }
 
-  async chunkGenerate(): Promise<string> {
+  async chunkGenerate(genConfig?: webllm.GenerationConfig): Promise<string> {
     const msg: webllm.WorkerMessage = {
       kind: "customRequest",
       uuid: crypto.randomUUID(),
       content: {
         requestName: "chunkGenerate",
-        requestMessage: ""
+        requestMessage: JSON.stringify(genConfig)
       }
     };
     return await this.getPromise<string>(msg);
