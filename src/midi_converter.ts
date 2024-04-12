@@ -6,10 +6,8 @@
 import MidiWriter from 'midi-writer-js'; // https://grimmdude.com/MidiWriterJS/docs/modules.html
 import { MAX_PITCH, TIME_RESOLUTION } from './music_transformer_config'
 import { DUR_OFFSET, NOTE_OFFSET, CONTROL_OFFSET } from './music_transformer_vocab';
-import { channel } from 'process';
 
-const VELOCITY = 72
-const BEAT = 2;
+const NOTE_ON_VELOCITY = 56.25
 
 function offset(num) {
   if (num >= CONTROL_OFFSET) return num - CONTROL_OFFSET;
@@ -31,7 +29,7 @@ export function eventsToCompound(rawData: number[], start_offset: number = 0): n
     const duration = offset(rawData[i + 1]) - DUR_OFFSET;
     const pitch = (offset(rawData[i + 2]) - NOTE_OFFSET) % MAX_PITCH;
     const instrument = Math.floor((offset(rawData[i + 2]) - NOTE_OFFSET) / MAX_PITCH);
-    notesData.push([start, duration, pitch, instrument, VELOCITY]);
+    notesData.push([start, duration, pitch, instrument, NOTE_ON_VELOCITY]);
   }
 
   return notesData;
@@ -71,16 +69,18 @@ export function compoundToMidi(notesData: number[][]): string {
     const track = elem[0];
     const channel = elem[1];
     // https://github.com/grimmdude/MidiWriterJS/blob/master/src/midi-events/note-event.ts
+    // Note event channel is 1-based
     const note = new MidiWriter.NoteEvent({
       pitch: pitch, velocity: velocity,
       tick: start, duration: `T${duration}`,
-      channel: channel
+      channel: channel + 1
     });
     track.addEvent(note);
   }
 
+  const midi = Array.from(instruMap.values()).map(v => v[0]);
   /* Download file. */
-  const writer = new MidiWriter.Writer(Array.from(instruMap.values()).map(v => v[0]));
+  const writer = new MidiWriter.Writer(midi);
   return writer.dataUri();
 }
 
