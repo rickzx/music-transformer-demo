@@ -7,6 +7,7 @@ import { ChunkGenerator, GenerationProgressCallback } from "./music_transformer_
 const musicLogitProcessor = new MusicLogitProcessor();
 const logitProcessorRegistry = new Map<string, LogitProcessor>();
 
+logitProcessorRegistry.set("music-small-800k-q0f32", musicLogitProcessor);
 logitProcessorRegistry.set("music-medium-800k-q0f32", musicLogitProcessor);
 
 class CustomChatWorkerHandler extends ChatWorkerHandler {
@@ -48,12 +49,26 @@ class CustomChatWorkerHandler extends ChatWorkerHandler {
         } else if (params.requestName == "resetGenerator") {
           console.log("Worker: reset music-transformer generator");
           this.handleTask(msg.uuid, async () => {
-            musicLogitProcessor.resetState();
-            chat.resetChat();
+            this.chunkGenerator.interrupt();
+            
             this.chunkGenerator = new ChunkGenerator();
             this.chunkIterator = this.chunkGenerator.chunkGenerate(chat, musicLogitProcessor, this.callback);
+            musicLogitProcessor.resetState();
+            chat.resetChat();
             return null;
           })
+        } else if (params.requestName == 'interrupt') {
+          console.log("Worker: pausing music-transformer generator");
+          this.handleTask(msg.uuid, async () => {
+            this.chunkGenerator.setPause();
+            return null;
+          });
+        } else if (params.requestName == 'restart') {
+          console.log("Worker: restarting music-transformer generator");
+          this.handleTask(msg.uuid, async () => {
+            this.chunkGenerator.setPause(false);
+            return null;
+          });
         }
         return;
       }

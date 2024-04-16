@@ -31,10 +31,12 @@
             <button id="startButton">Start Generator</button>
             <button id="pauseButton">Pause Generator</button>
             <button id="resetButton">Reset Generator</button>
+            <button id="downloadMidiButton">Download MIDI</button>
         </div>
 
         <div class="footnote">
-            Created by Rick Zhou, Zihe Zhao <br> 
+            Created by Rick Zhou, Zihe Zhao<br>
+            Advised by Professor Chris Donahue <br> 
             2024 @ Carnegie Mellon University. <br>
             Powered by <a href="https://github.com/mlc-ai/web-llm" target="_blank">Web-LLM</a>, <a href="https://github.com/cifkao/html-midi-player" target="_blank">htmi-midi-player</a>
         </div>
@@ -43,10 +45,18 @@
     <div class="config-panel" id="config-panel">
         <div class="config-panel-header">
             <h4>Configuration</h4>
-            <p>(Effective at next chunk)<br></p>
-
         </div>
         <div class="config-panel-content">
+            <div class="dropdown-container">
+                <label for="modelSize">Choose a model size:</label>
+                <select id="modelSize">
+                    <option value="small" selected>Small Model</option>
+                    <option value="medium">Medium Model</option>
+                </select>
+                <button id="reloadButton">Reload Model</button>
+            </div>
+            <hr>
+            <p>Effective at next chunk<br></p>
             <div class="config-panel-row">
                 <label for="temperature">Temperature</label>
                 <input type="range" id="temperature" min="0.1" max="1.0" step="0.02" value="0.5">

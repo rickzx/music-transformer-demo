@@ -42,6 +42,30 @@ class CustomChatWorkerClient extends webllm.ChatWorkerClient {
     await this.getPromise<null>(msg);
   }
 
+  async stopGenerator(): Promise<void> {
+    const msg: webllm.WorkerMessage = {
+      kind: "customRequest",
+      uuid: crypto.randomUUID(),
+      content: {
+        requestName: "interrupt",
+        requestMessage: ""
+      }
+    };
+    await this.getPromise<null>(msg);
+  }
+
+  async restartGenerator(): Promise<void> {
+    const msg: webllm.WorkerMessage = {
+      kind: "customRequest",
+      uuid: crypto.randomUUID(),
+      content: {
+        requestName: "restart",
+        requestMessage: ""
+      }
+    };
+    await this.getPromise<null>(msg);
+  }
+
   onmessage(event: MessageEvent<any>): void {
     const msg = event.data as WorkerMessage;
     switch (msg.kind) {
@@ -58,10 +82,7 @@ class CustomChatWorkerClient extends webllm.ChatWorkerClient {
   }
 }
 
-export async function initChat() {
-  const musicLogitProcessor = new MusicLogitProcessor();
-  const logitProcessorRegistry = new Map<string, webllm.LogitProcessor>();
-  logitProcessorRegistry.set("music-medium-800k-q0f32", musicLogitProcessor);
+export async function initChat(model_id?: string) {
   const chat = new CustomChatWorkerClient(new Worker(
     new URL('./worker.ts', import.meta.url),
     { type: 'module' }
@@ -79,11 +100,20 @@ export async function initChat() {
         "model_id": "music-medium-800k-q0f32",
         "model_lib_url": "https://raw.githubusercontent.com/mlc-ai/binary-mlc-llm-libs/main/music-medium-800k/music-medium-800k-q0f32-webgpu.wasm",
       },
+      {
+        "model_url": "https://huggingface.co/mlc-ai/mlc-chat-stanford-crfm-music-small-800k-q0f32-MLC/resolve/main/",
+        "model_id": "music-small-800k-q0f32",
+        "model_lib_url": "https://raw.githubusercontent.com/mlc-ai/binary-mlc-llm-libs/main/music-small-800k/music-small-800k-q0f32-webgpu.wasm",
+      },
     ]
   }
 
+  if (model_id === undefined) {
+    model_id = "music-small-800k-q0f32";
+  }
+
   // Reload chat module with a logit processor
-  await chat.reload("music-medium-800k-q0f32", undefined, myAppConfig);
+  await chat.reload(model_id, undefined, myAppConfig);
 
   return chat;
 }

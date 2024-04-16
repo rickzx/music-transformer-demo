@@ -9,9 +9,19 @@ export type GenerationProgressCallback = (
 
 export class ChunkGenerator {
   genConfig?: GenerationConfig;
-  
+  pauseRequested: boolean = false;
+  interruptRequested: boolean = false;
+
   setGenConfig(genConfig: GenerationConfig) {
     this.genConfig = genConfig;
+  }
+
+  setPause(pauseRequested: boolean = true) {
+    this.pauseRequested = pauseRequested;
+  }
+
+  interrupt() {
+    this.interruptRequested = true;
   }
 
   /**
@@ -36,8 +46,10 @@ export class ChunkGenerator {
     let tokenGenerated = 0;
 
     // 1. Generate first 1020 tokens
-    let curTime = 0; // For debugging
-    while (musicLogitProcessor.tokenSequence.length < tokenToGenerate) {
+    while (
+      !this.interruptRequested &&
+      musicLogitProcessor.tokenSequence.length < tokenToGenerate
+    ) {
       nextToken = await chat.forwardTokensAndSample(
         [nextToken],
         /*isPrefill=*/ false,
@@ -45,25 +57,18 @@ export class ChunkGenerator {
       );
 
       tokenGenerated++;
-      callback(tokenGenerated, tokenToGenerate);
-
-      // For debugging
-      if ((musicLogitProcessor.tokenSequence.length - 1) % 3 == 0) {
-        if (nextToken < curTime) {
-          throw Error(
-            "Generated past time. curTime=" +
-              curTime +
-              ", nextToken=" +
-              nextToken
-          );
-        }
-        if (nextToken >= DUR_OFFSET) {
-          throw Error("Generated invalid time. nextToken=" + nextToken);
-        }
-        curTime = nextToken;
+      if (!this.pauseRequested) {
+        callback(tokenGenerated, tokenToGenerate);
       }
     }
-    yield Promise.resolve(musicLogitProcessor.tokenSequence);
+
+    if (this.interruptRequested) {
+      musicLogitProcessor.resetState();
+      yield Promise.reject("Interrupted");
+      return;
+    } else {
+      yield Promise.resolve(musicLogitProcessor.tokenSequence);
+    }
 
     tokenToGenerate = 510;
     tokenGenerated = 0;
@@ -81,7 +86,7 @@ export class ChunkGenerator {
 
     // 4. Keep generating chunks of 510 tokens
     let cycles = 0; // Number of 510-token chunks generated after the first 1020 tokens
-    while (true) {
+    while (!this.interruptRequested) {
       // TODO: change to a user-triggered stop
       let startTime = prompt[prompt.length - 3];
 
@@ -97,30 +102,19 @@ export class ChunkGenerator {
       }
 
       // 4.2. Decode autoregressively
-      let curTime = startTime; // for debugging
       tokenGenerated = 0;
-      while (musicLogitProcessor.tokenSequence.length < tokenToGenerate) {
+      while (
+        !this.interruptRequested &&
+        musicLogitProcessor.tokenSequence.length < tokenToGenerate
+      ) {
         nextToken = await chat.forwardTokensAndSample(
           [nextToken],
           /*isPrefill=*/ false,
           this.genConfig
         );
         tokenGenerated++;
-        callback(tokenGenerated, tokenToGenerate);
-        // For debugging
-        if ((musicLogitProcessor.tokenSequence.length - 1) % 3 == 0) {
-          if (nextToken < curTime) {
-            throw Error(
-              "Generated past time. curTime=" +
-                curTime +
-                ", nextToken=" +
-                nextToken
-            );
-          }
-          if (nextToken >= DUR_OFFSET) {
-            throw Error("Generated invalid time. nextToken=" + nextToken);
-          }
-          curTime = nextToken;
+        if (!this.pauseRequested) {
+          callback(tokenGenerated, tokenToGenerate);
         }
       }
 
@@ -129,7 +123,13 @@ export class ChunkGenerator {
       for (let i = 0; i < tokenToGenerate; i += 3) {
         prompt[i] -= startTime;
       }
-      yield Promise.resolve(prompt);
+      if (this.interruptRequested) {
+        musicLogitProcessor.resetState();
+        yield Promise.reject("Interrupted");
+        return;
+      } else {
+        yield Promise.resolve(prompt);
+      }
       prompt.unshift(55026); // Add the AUTOREGRESS prompt back in, making the prompt 511
 
       // 4.4. Clear KV cache and logitProcessor.tokenSequence
