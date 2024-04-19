@@ -1,5 +1,4 @@
 import * as webllm from "@mlc-ai/web-llm";
-import { MusicLogitProcessor } from "./music_logit_processor";
 import { CustomRequestParams, WorkerMessage } from "@mlc-ai/web-llm";
 
 function setLabel(id: string, text: string) {
@@ -10,7 +9,23 @@ function setLabel(id: string, text: string) {
   label.innerText = text;
 }
 
-class CustomChatWorkerClient extends webllm.ChatWorkerClient {
+// Define modelRecord
+const myAppConfig: webllm.AppConfig = {
+  model_list: [
+    {
+      "model_url": "https://huggingface.co/mlc-ai/mlc-chat-stanford-crfm-music-medium-800k-q0f32-MLC/resolve/main/",
+      "model_id": "music-medium-800k-q0f32",
+      "model_lib_url": "https://raw.githubusercontent.com/mlc-ai/binary-mlc-llm-libs/main/music-medium-800k/music-medium-800k-q0f32-webgpu.wasm",
+    },
+    {
+      "model_url": "https://huggingface.co/mlc-ai/mlc-chat-stanford-crfm-music-small-800k-q0f32-MLC/resolve/main/",
+      "model_id": "music-small-800k-q0f32",
+      "model_lib_url": "https://raw.githubusercontent.com/mlc-ai/binary-mlc-llm-libs/main/music-small-800k/music-small-800k-q0f32-webgpu.wasm",
+    },
+  ]
+};
+
+export class CustomChatWorkerClient extends webllm.ChatWorkerClient {
   constructor(worker: any) {
     super(worker);
     worker.onmessage = (event: any) => {
@@ -92,22 +107,6 @@ export async function initChat(model_id?: string) {
     setLabel("init-label", report.text);
   });
 
-  // Define modelRecord
-  const myAppConfig: webllm.AppConfig = {
-    model_list: [
-      {
-        "model_url": "https://huggingface.co/mlc-ai/mlc-chat-stanford-crfm-music-medium-800k-q0f32-MLC/resolve/main/",
-        "model_id": "music-medium-800k-q0f32",
-        "model_lib_url": "https://raw.githubusercontent.com/mlc-ai/binary-mlc-llm-libs/main/music-medium-800k/music-medium-800k-q0f32-webgpu.wasm",
-      },
-      {
-        "model_url": "https://huggingface.co/mlc-ai/mlc-chat-stanford-crfm-music-small-800k-q0f32-MLC/resolve/main/",
-        "model_id": "music-small-800k-q0f32",
-        "model_lib_url": "https://raw.githubusercontent.com/mlc-ai/binary-mlc-llm-libs/main/music-small-800k/music-small-800k-q0f32-webgpu.wasm",
-      },
-    ]
-  }
-
   if (model_id === undefined) {
     model_id = "music-small-800k-q0f32";
   }
@@ -116,4 +115,8 @@ export async function initChat(model_id?: string) {
   await chat.reload(model_id, undefined, myAppConfig);
 
   return chat;
+}
+
+export async function reloadChat(chat: webllm.ChatWorkerClient, model_id: string) {
+  await chat.reload(model_id, undefined, myAppConfig);
 }
