@@ -1,6 +1,6 @@
 # Infinite Music Player webpage
 
-[demo](https://zihe-zhao.github.io/music-player)
+[demo](https://rickzx.github.io/music-transformer-demo/)
 
 
 # To run the web-app locally
