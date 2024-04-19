@@ -5,7 +5,7 @@ import * as midis from "url:./assets/*.mid";
 import * as mt from "./music_transformer.ts";
 import { MIDILoader } from "./midi_loader.ts";
 import { tensorflow } from "@magenta/music/esm/protobuf/proto";
-import { ChatWorkerClient, GenerationConfig } from "@mlc-ai/web-llm";
+import { GenerationConfig } from "@mlc-ai/web-llm";
 
 let log_flag = true;
 let current_midi_url;
